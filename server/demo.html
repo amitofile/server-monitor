@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.0/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+    <script>
+        var socket = io.connect('http://dummy47.amitofile.com:8080', {path:'/feed/monitor'});
+        socket.emit('pageload', {node : '10.6.205.57'});
+        socket.on('broadcast', function (msg) {
+            console.log(msg);
+        });
+
+    </script>
+</body>
+
+</html>
