@@ -1,6 +1,9 @@
 const dgram = require('dgram');
 const udpServer = dgram.createSocket('udp4');
 
+//const config = require('config');
+//const params = config.get('default');
+
 const app = require('express')();
 const httpServer = require('http').Server(app);
 const io = require('socket.io')(httpServer, { path: '/feed/monitor' });
@@ -11,7 +14,6 @@ udpServer.on('error', (err) => {
 });
 
 udpServer.on('message', (msg, rinfo) => {
-  //console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
   node_data = JSON.parse(msg.toString());
   io.compress(true)
     .to(node_data['node']['id'] + '_room')
@@ -25,10 +27,9 @@ udpServer.on('listening', () => {
 
 udpServer.bind(20002);
 
-
 io.on('connection', socket => {
   console.log(`${socket.id} connected`);
-  socket.emit('broadcast', 'Welcome to Dashboard Monitor (Build: 20200609)');
+  socket.emit('broadcast', 'Welcome to Dashboard Monitor (Build: 20200618)');
 
   socket.on('pageload', input => {
     if (typeof input['node'] !== 'undefined') {

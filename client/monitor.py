@@ -12,6 +12,8 @@ import time
 import json
 import platform
 import datetime
+from services.redis import main as redis_status
+from services.docker import main as docker_status
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -55,9 +57,15 @@ def main():
 
     if config['CollectInformation']['Processes'] == 'true':
         process_running = processSortedByMemory()
-        node_data['processes']['total'] = len(processSortedByMemory())
+        node_data['processes']['total'] = len(process_running)
         node_data['processes']['top'] = process_running[:int(
             config['Process']['TopProcessCount'])]
+    
+    if config['CollectInformation']['Redis'] == 'true':
+        node_data['applications']['redis'] = redis_status()
+
+    if config['CollectInformation']['Docker'] == 'true':
+        node_data['applications']['docker'] = docker_status()
 
     node_data['timestamp'] = datetime.datetime.utcnow().strftime(
         "%Y-%m-%dT%H:%M:%S+00:00")
