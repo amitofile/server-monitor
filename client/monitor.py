@@ -14,6 +14,7 @@ import platform
 import datetime
 from services.redis import main as redis_status
 from services.docker import main as docker_status
+from services.streamer import main as streamer_status
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -66,6 +67,9 @@ def main():
 
     if config['CollectInformation']['Docker'] == 'true':
         node_data['applications']['docker'] = docker_status()
+
+    if config['CollectInformation']['Streamer'] == 'true':
+        node_data['applications']['streamer'] = streamer_status()
 
     node_data['timestamp'] = datetime.datetime.utcnow().strftime(
         "%Y-%m-%dT%H:%M:%S+00:00")
