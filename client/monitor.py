@@ -12,13 +12,15 @@ import time
 import json
 import platform
 import datetime
-from services.redis import main as redis_status
-from services.docker import main as docker_status
-from services.streamer import main as streamer_status
+import threading
+from services.redis as _redis
+from services.docker as _docker
+from services.streamer as _streamer
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 udp = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+udp.bind(('127.0.0.1', 8082))
 node_data = {'node': {}, 'cpu': {}, 'memory': {},
              'disk': {}, 'network': {}, 'processes': {}, 'applications': {}}
 
@@ -63,13 +65,13 @@ def main():
             config['Process']['TopProcessCount'])]
     
     if config['CollectInformation']['Redis'] == 'true':
-        node_data['applications']['redis'] = redis_status()
+        node_data['applications']['redis'] = _redis.main()
 
     if config['CollectInformation']['Docker'] == 'true':
-        node_data['applications']['docker'] = docker_status()
+        node_data['applications']['docker'] = _docker.main()
 
     if config['CollectInformation']['Streamer'] == 'true':
-        node_data['applications']['streamer'] = streamer_status()
+        node_data['applications']['streamer'] = _streamer.main()
 
     node_data['timestamp'] = datetime.datetime.utcnow().strftime(
         "%Y-%m-%dT%H:%M:%S+00:00")
@@ -135,7 +137,40 @@ def processSortedByMemory():
         listOfProcObjects, key=lambda procObj: procObj['memory_uses'], reverse=True)
     return listOfProcObjects
 
+def main2():
+    data, addr = udp.recvfrom(1024)
+    command = data.decode("utf-8")
+    switch (command) {
+        case "EXCHANGE_SPLITTER_RESTART":
+            _streamer.restart('StreamerIOSplitterRestart')
+            break;
+        case "EXCHANGE_FEEDER_RESTART":
+            _streamer.restart('EXCHANGE_FEEDER')
+            break;
+        case "ORDER_MAIN_RESTART":
+            _streamer.restart('SPLITTER')
+            break;
+        case "ORDER_FEEDER_RESTART":
+            _streamer.restart('SPLITTER')
+            break;
+        case "REDIS_RESTART":
+            
+            break;
+        case "NGINX_RESTART":
+            
+            break;
+        case "DOCKER_RESTART":
+            
+            break;
+    }
 
-while True:
-    main()
-    time.sleep(5)
+def set_interval(func, sec):
+    def func_wrapper():
+        set_interval(func, sec)
+        func()
+    t = threading.Timer(sec, func_wrapper)
+    t.start()
+    return t
+
+set_interval(main, 5)
+set_interval(main2, 1)

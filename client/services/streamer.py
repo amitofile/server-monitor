@@ -11,6 +11,12 @@ data = {
     }
 }
 
+def restart(process):
+    out = subprocess.Popen(['forever', 'list'],
+                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout, stderr = out.communicate()
+    result = stdout.splitlines()
+    print(result)
 
 def main():
     data['exchange']['splitter']['status'] = 'stopped'
